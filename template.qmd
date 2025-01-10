@@ -1,6 +1,9 @@
 ---
 title: "Template"
-format: html
+format: 
+  html:
+    code-fold: true
+    toc: true
 execute:
   eval: false
 ---
@@ -20,7 +23,7 @@ library(tmap)
 What do we need to change to get the data to load in the following chunk?
 
 ```{r}
-sfo_trees_df<-read_csv(here("data","trees")) |> janitor::clean_names()
+sfo_trees_df<-read_csv(here("data","sfo_trees","sfo_trees.csv")) |> janitor::clean_names()
 ```
 
 ## Part 1: Data exploration
@@ -31,26 +34,51 @@ What are some interesting questions you could ask about the data?
 
 Write them below:
 
+1. What does it mean for a tree to be undocumented? What options are there? 
+``` {r}
+summary(sfo_trees_df)
+unique(sfo_trees_df$legal_status)
+  
+```
+```{r}
+sfo_trees_df %>% 
+  group_by(legal_status) %>%
+  summarize(tree_count=n()) |>
+  slice_max(tree_count,n=5) |>
+  ggplot(aes(x=fct_reorder(legal_status,tree_count), y=tree_count))+
+  geom_bar(stat="identity")+
+  labs(title="Legal Status of SFO's Trees", caption="")+
+  xlab("Legal Status")+
+  ylab("Count")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
 
+``` {r}
 
-
-
-
-
+tree_plot = ggplot(slice_df, aes(x=legal_status, y=tree_count))+
+  geom_bar(stat="identity")+
+  labs(title="Legal Status of SFO's Trees", caption="")+
+  xlab("Legal Status")+
+  ylab("Count")+
+  theme_bw()
+  
+tree_plot
+```
 
 
 ### Example 2
 
 Describe what this piece of code does. Feel free to run it to help you understand
-
+Filters the sfo_trees_df database for those where the Permitted Site is "Permitted Site" and the caretaker is either MTA or DPW
 ```{r}
 permitted_mta_dpw<-sfo_trees_df |> 
-  filter(legal_status == 'Permitted Site' & %in% c("MTA","DPW"))
+  filter(legal_status == 'Permitted Site' & caretaker %in% c("MTA","DPW"))
 ```
 
 
 What does the `%in%` do? Write an example to explain the `%in%` operator to your neighbor using the empty code chunk below
-
+Allows the result to be true for any of the options within the created vector
 ```{r}
 
 ```
